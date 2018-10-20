@@ -7,6 +7,7 @@ import os
 reddit = praw.Reddit("bot1")
 config = configparser.ConfigParser()
 
+
 def getImages():
     print("Downloading from subreddits: " + source)
     imgName = 0
@@ -17,9 +18,10 @@ def getImages():
         try:
             dl.urlretrieve(submission.url, str(imgName) + ".jpg")
             if (imgName >= int(config["Bot"]["maxImages"])):
-                print("Downloading completed, " + imgName - errorCount + " images successfully downloaded with " + errorCount + " errors!")
+                print("Downloading completed, " + imgName - errorCount +
+                      " images successfully downloaded with " + errorCount + " errors!")
                 break
-        #Catch error if url fails
+        # Catch error if url fails
         except IOError:
             if errorCount < 5:
                 print("Downloading failed, skipping")
@@ -29,7 +31,14 @@ def getImages():
         imgName += 1
 
 
-#Configuration
+def setDesktop(img = 0):
+    SPI_SETDESKWALLPAPER = 20
+    ctypes.windll.user32.SystemParametersInfoA(
+        SPI_SETDESKWALLPAPER, 0, str(img) + ".jpg", 0)
+
+
+
+# Configuration
 config.read("config.ini")
 os.chdir(config["Bot"]["downloadDirectory"])
 
