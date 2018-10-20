@@ -9,15 +9,17 @@ reddit = praw.Reddit("bot1")
 config = configparser.ConfigParser()
 #commandDict = {"fetch": getImages, "next": setDesktop}
 
+
 def main():
     # Configuration
     config.read("config.ini")
-    os.chdir(config["Bot"]["downloadDirectory"])
 
     print("wpbot ready")
     getInput()
 
+
 def getImages():
+    os.chdir(config["Bot"]["downloadDirectory"])
     source = parseSources()
     print("Downloading from subreddits: " + source)
     imgName = 0
@@ -27,11 +29,11 @@ def getImages():
         print("Downloading --- " + submission.title)
         print(submission.url)
         try:
-            #If the url does not indicate it contains an image, raise an IOError
+            # If the url does not indicate it contains an image, raise an IOError
             mimetype = mimetypes.guess_type(submission.url)[0]
             if not (mimetype and mimetype.startswith('image')):
                 raise IOError
-            
+
             dl.urlretrieve(submission.url, str(imgName) + ".png")
             errorCount = 0
             imgName += 1
@@ -41,15 +43,18 @@ def getImages():
                 break
         # Catch error if url fails
         except IOError:
-            if errorCount < 50:
+            if errorCount < 30:
                 print("No image detected, skipping")
+                errorCount += 1
             else:
-                print("No image posts found in 50 tries, make sure to include only image subredddits in config.ini. Terminating...")
+                print(
+                    "No image posts found in 30 tries, make sure to include only image subredddits in config.ini. Terminating...")
                 break
+    os.chdir("..")
 
 
 def parseSources():
-#Creates a string representing all subreddits in config.ini
+    # Creates a string representing all subreddits in config.ini
     source = ""
     subNum = 0
     while str(subNum) in config["Sources"]:
@@ -59,23 +64,28 @@ def parseSources():
             source += "+"
     return source
 
-def setDesktop(img=0): 
-    #Selects the next image from imported images and calls setter method
-    #Acts as a wrapper for setter that sets next image and catches exceptions
+
+def setDesktop():
+    img = int(config["Bot"]["currentWP"])
+    # Selects the next image from imported images and calls setter method
+    # Acts as a wrapper for setter that sets next image and catches exceptions
     output = img + 1
     try:
         setter(img)
+        print("Next background, now using background " + str(img))
     except IOError:
         if (img == int(config["Bot"]["maxImages"])-1):
             output = 0
-            setter(output)
+            setter(0)
         else:
             getImages()
             setter(img)
-    return output
+    config["Bot"]["currentWP"] = str(output)
+    with open("config.ini", "w") as configfile:    # save
+        config.write(configfile)
 
 
-def setter(img=0):  
+def setter(img=0):
     # Helper function for setDesktop that gets the appropriate image
     SPI_SETDESKWALLPAPER = 20
     ctypes.windll.user32.SystemParametersInfoA(
@@ -83,15 +93,15 @@ def setter(img=0):
 
 
 def getInput():
-    #Acts as user interface, gets user input and runs appropriate functions
+    # Acts as user interface, gets user input and runs appropriate functions
     print("Type next to update your wallpaper, and help for more information")
-    current = 0  # The current wallpaper number
     while True:
         command = input("")
         if (command == "fetch"):
             getImages()
         if (command == "next"):
-            current = setDesktop(current)
+            setDesktop()
+
 
 if __name__ == "__main__":
     main()
