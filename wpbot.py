@@ -9,9 +9,16 @@ reddit = praw.Reddit("bot1")
 config = configparser.ConfigParser()
 #commandDict = {"fetch": getImages, "next": setDesktop}
 
+def main():
+    # Configuration
+    config.read("config.ini")
+    os.chdir(config["Bot"]["downloadDirectory"])
+
+    print("wpbot ready")
+    getInput()
 
 def getImages():
-    source = config["Sources"]["subreddits"]
+    source = parseSources()
     print("Downloading from subreddits: " + source)
     imgName = 0
     errorCount = 0
@@ -40,6 +47,17 @@ def getImages():
                 print("No image posts found in 50 tries, make sure to include only image subredddits in config.ini. Terminating...")
                 break
 
+
+def parseSources():
+#Creates a string representing all subreddits in config.ini
+    source = ""
+    subNum = 0
+    while str(subNum) in config["Sources"]:
+        source += config["Sources"][str(subNum)]
+        subNum += 1
+        if str(subNum) in config["Sources"]:
+            source += "+"
+    return source
 
 def setDesktop(img=0): 
     #Selects the next image from imported images and calls setter method
@@ -74,21 +92,6 @@ def getInput():
             getImages()
         if (command == "next"):
             current = setDesktop(current)
-
-
-def main():
-    # Configuration
-    config.read("config.ini")
-    os.chdir(config["Bot"]["downloadDirectory"])
-
-    #subNum = 0
-    #while str(subNum) in config["Sources"]:
-    #    source += config["Sources"][str(subNum)]
-    #    subNum += 1
-    #    if str(subNum) in config["Sources"]:
-    #        source += "+"
-    #print("wpbot ready")
-    getInput()
 
 if __name__ == "__main__":
     main()
