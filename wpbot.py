@@ -26,5 +26,5 @@ for submission in subreddit.top("month"):
     print("Downloading " + submission.title)
     dl.urlretrieve(submission.url, str(imgName) + ".jpg")
     imgName += 1
-    if (imgName >= config["maxImages"]):
+    if (imgName >= int(config["Bot"]["maxImages"])):
         break
