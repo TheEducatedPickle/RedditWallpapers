@@ -78,7 +78,9 @@ def setDesktop():
             output = 0
             setter(0)
         else:
-            getImages()
+            if promptOverwrite("No backgrounds found, fetch backgrounds? (y/n)"):
+                getImages()
+            img = 0
             setter(img)
     config["Bot"]["currentWP"] = str(output)
     with open("config.ini", "w") as configfile:    # save
@@ -86,11 +88,21 @@ def setDesktop():
 
 
 def setter(img=0):
+    os.chdir(config["Bot"]["downloadDirectory"])
     # Helper function for setDesktop that gets the appropriate image
-    SPI_SETDESKWALLPAPER = 20
-    ctypes.windll.user32.SystemParametersInfoA(
-        SPI_SETDESKWALLPAPER, 0, str(img) + ".png", 0)
+    ctypes.windll.user32.SystemParametersInfoW(
+        20, 0, str(img) + ".png", 3)
+    os.chdir("..")
 
+def promptOverwrite(prompt):
+    while True:
+        output = prompt(prompt)
+        if output == "y" or output == "yes":
+            return True
+        elif output == "n" or output == "no":
+            return False
+        else:
+            pass
 
 def getInput():
     # Acts as user interface, gets user input and runs appropriate functions
