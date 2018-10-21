@@ -14,6 +14,10 @@ def main():
     # Configuration
     config.read("config.ini")
 
+    #Create image directory if it doesnt exist
+    if not os.path.exists(config["Bot"]["downloaddirectory"]):
+        os.makedirs(config["Bot"]["downloaddirectory"])
+
     print("wpbot ready")
     getInput()
 
