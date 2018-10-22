@@ -14,12 +14,25 @@ def main():
     # Configuration
     config.read("config.ini")
 
-    #Create image directory if it doesnt exist
+    # Create image directory if it doesnt exist
     if not os.path.exists(config["Bot"]["downloaddirectory"]):
         os.makedirs(config["Bot"]["downloaddirectory"])
 
     print("wpbot ready")
     getInput()
+
+
+def getInput():
+    # Acts as user interface, gets user input and runs appropriate functions
+    print("Type next to update your wallpaper, and help for more information")
+    while True:
+        command = input("")
+        if (command == "fetch"):
+            getImages()
+        elif (command == "next"):
+            setDesktop()
+        elif (command.split()[0] == "set"):
+            set(command.split()[1])
 
 
 def getImages():
@@ -29,7 +42,7 @@ def getImages():
     imgName = 0
     errorCount = 0
     subreddit = reddit.subreddit(source)
-    for submission in subreddit.top("month"):
+    for submission in subreddit.top("month", limit=int(config["Bot"]["maxImages"])):
         print("Downloading --- " + submission.title)
         print(submission.url)
         try:
@@ -42,9 +55,6 @@ def getImages():
             errorCount = 0
             imgName += 1
 
-            if (imgName >= int(config["Bot"]["maxImages"])):
-                print("Downloading completed!")
-                break
         # Catch error if url fails
         except IOError:
             if errorCount < 30:
@@ -55,6 +65,7 @@ def getImages():
                     "No image posts found in 30 tries, make sure to include only image subredddits in config.ini. Terminating...")
                 break
     os.chdir("..")
+    print("Downloading completed!")
 
 
 def parseSources():
@@ -69,14 +80,28 @@ def parseSources():
     return source
 
 
+def set(img=0):
+    if not os.path.isfile(str(img) + ".png"):
+        print("Error: Background " + str(img) + " not found in " + os.getcwd() + ", please use range 0 to " + str(int(config["Bot"]["maximages"])-1))
+        return
+    
+    print("Setting wallpaper to " + str(img))
+
+    config["Bot"]["currentWP"] = str(img)
+    with open("config.ini", "w") as configfile:    # save
+        config.write(configfile)
+    
+    setDesktop()
+
+
 def setDesktop():
     img = int(config["Bot"]["currentWP"])
     # Selects the next image from imported images and calls setter method
     # Acts as a wrapper for setter that sets next image and catches exceptions
     output = img + 1
     try:
-        setter(img)
-        print("Next background, now using background " + str(img))
+        if setter(img):
+            print("Next background, now using background " + str(img))
     except IOError:
         if (img == int(config["Bot"]["maxImages"])-1):
             output = 0
@@ -94,9 +119,14 @@ def setDesktop():
 def setter(img=0):
     os.chdir(config["Bot"]["downloadDirectory"])
     # Helper function for setDesktop that gets the appropriate image
+    if not os.path.isfile(str(img) + ".png"):
+        print("Error: Background " + str(img) + " not found in " + os.getcwd())
+        return False
     ctypes.windll.user32.SystemParametersInfoW(
         20, 0, str(img) + ".png", 3)
     os.chdir("..")
+    return True
+
 
 def promptOverwrite(prompt):
     while True:
@@ -107,16 +137,6 @@ def promptOverwrite(prompt):
             return False
         else:
             pass
-
-def getInput():
-    # Acts as user interface, gets user input and runs appropriate functions
-    print("Type next to update your wallpaper, and help for more information")
-    while True:
-        command = input("")
-        if (command == "fetch"):
-            getImages()
-        if (command == "next"):
-            setDesktop()
 
 
 if __name__ == "__main__":

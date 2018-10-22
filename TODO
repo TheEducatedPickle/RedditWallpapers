@@ -1,2 +1,3 @@
 Fix inability to detect images when setting wallpaper
 Test IOExceptions
+Fix set function
