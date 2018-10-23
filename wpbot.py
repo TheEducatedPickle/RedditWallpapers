@@ -61,8 +61,8 @@ def getImages():
                 print("No image detected, skipping")
                 errorCount += 1
             else:
-                print(
-                    "No image posts found in 30 tries, make sure to include only image subredddits in config.ini. Terminating...")
+                print("No image posts found in 30 tries, make sure to include only image subredddits in config.ini. Terminating...")
+                os.chdir("..")
                 break
     os.chdir("..")
     print("Downloading completed!")
