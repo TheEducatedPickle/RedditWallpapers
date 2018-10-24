@@ -1,9 +1,13 @@
 import praw
 import ctypes
-import configparser
+try:
+	import configparser
+except:
+	import ConfigParser
 import urllib.request as dl
 import os
 import mimetypes
+import sys
 
 reddit = praw.Reddit("bot1")
 config = configparser.ConfigParser()
@@ -51,7 +55,7 @@ def getImages():
             if not (mimetype and mimetype.startswith('image')):
                 raise IOError
 
-            dl.urlretrieve(submission.url, str(imgName) + ".png")
+            dl.urlretrieve(submission.url, str(imgName) + ".png", reporthook=progressDisplay)
             errorCount = 0
             imgName += 1
 
@@ -137,6 +141,11 @@ def promptOverwrite(prompt):
             return False
         else:
             pass
+
+def progressDisplay(count, block_size, total_size):
+	percent = int(count * block_size * 100 / total_size)
+	sys.stdout.write("\r...%d%%" % percent)
+	sys.stdout.flush()
 
 
 if __name__ == "__main__":
