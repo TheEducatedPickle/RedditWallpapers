@@ -143,7 +143,7 @@ def promptOverwrite(prompt):
             pass
 
 def progressDisplay(count, block_size, total_size):
-	percent = int(count * block_size * 100 / total_size)
+	percent = min(100,int(count * block_size * 100 / total_size))
 	sys.stdout.write("\r...%d%%" % percent)
 	sys.stdout.flush()
 
