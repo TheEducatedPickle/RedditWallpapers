@@ -41,17 +41,12 @@ def getInput():
             set(command.split()[1])
 
 
-def reverseSearchImage():
-    img = 0
-    while img <= lastImage:
-        print('Searching for highest resolution image for ' + str(img) + '.png')
-        filePath = '/images/' + str(img) + '.png'
-        searchUrl = 'http://www.google.hr/searchbyimage/upload'
-        multipart = {'encoded_image': (filePath, open(filePath, 'rb')), 'image_content': ''}
-        response = requests.post(searchUrl, files=multipart, allow_redirects=False)
-        fetchUrl = response.headers['Location']
-        print(fetchUrl)
-        img = img + 1
+def reverseSearchImage(img):
+    searchUrl = 'http://www.google.hr/searchbyimage/upload'
+    multipart = {'encoded_image': (str(img)+'.png', open(str(img)+'.png', 'rb')), 'image_content': ''}
+    response = requests.post(searchUrl, files=multipart, allow_redirects=False)
+    fetchUrl = response.headers['Location']
+    print('The highest resolution image was found at ' + fetchUrl)
 
 
 def getImages():
@@ -72,8 +67,11 @@ def getImages():
 
             dl.urlretrieve(submission.url, str(imgName) + '.png', reporthook=progressDisplay)
             errorCount = 0
-            imgName += 1
             print('\n')
+            print('Searching for highest resolution image for ' + submission.title + '.png')
+            reverseSearchImage(imgName)
+            print('\n')
+            imgName += 1
 
         # Catch error if url fails
         except IOError:
@@ -84,10 +82,8 @@ def getImages():
                 print('No image posts found in 30 tries, make sure to include only image subredddits in config.ini. Terminating...')
                 os.chdir('..')
                 break
-    lastImage = imgName
     os.chdir('..')
-    print('Downloading completed! Refining images... \n')
-    #reverseSearchImage()
+    print('Downloading complete!')
 
 
 def parseSources():
